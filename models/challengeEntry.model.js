@@ -13,7 +13,7 @@ export const ChallengeEntry = {
     const [rows] = await db.query(
       `SELECT * FROM challenge_entries WHERE challenge_id = ?`,
       [challenge_id]
-    );
+    )
     return rows;
   },
 

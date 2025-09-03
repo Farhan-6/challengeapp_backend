@@ -12,7 +12,7 @@ export const addParticipantToChallenge = async (challengeId, participant_id, med
         [participant_id]
     );
     if (userRows.length === 0) {
-        throw new Error("Participant does not exist");
+        throw new Error("Participant does not exist")
     }
 
     // Check if already joined

@@ -15,7 +15,7 @@ export const joinChallenge = async (req, res) => {
     res.status(201).json({ message: "Joined challenge successfully", entry: result });
   } catch (error) {
     if (error.message.includes("already joined")) {
-      return res.status(409).json({ error: error.message }); // 409 Conflict
+      return res.status(409).json({ error: error.message })
     }
     res.status(400).json({ error: error.message });
   }
