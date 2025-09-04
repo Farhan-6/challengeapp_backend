@@ -1,5 +1,5 @@
 // controllers/challengeEntry.service.js
-import { addEntry, addParticipantToChallenge, fetchEntriesByChallenge, fetchEntry, modifyEntry, payoutWinner, removeEntry } from "../services/challengeEntry.service.js";
+import { addParticipantToChallenge, fetchEntriesByChallenge, fetchEntry, modifyEntry, payoutWinner, removeEntry } from "../services/challengeEntry.service.js";
 
 
 export const joinChallenge = async (req, res) => {
@@ -21,15 +21,6 @@ export const joinChallenge = async (req, res) => {
   }
 };
 
-
-export const create = async (req, res) => {
-  try {
-    const result = await addEntry(req.body);
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
 
 export const getByChallenge = async (req, res) => {
   try {

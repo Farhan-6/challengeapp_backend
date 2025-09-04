@@ -71,12 +71,6 @@ export const addParticipantToChallenge = async (challengeId, participant_id, med
 /**
  * Generic entry management
  */
-export const addEntry = async (data) => {
-    const db = await connectDB();
-    const id = uuidv4();
-    const newData = { id, ...data };
-    return ChallengeEntry.create(db, newData);
-};
 
 export const fetchEntriesByChallenge = async (challenge_id) => {
     const db = await connectDB();
