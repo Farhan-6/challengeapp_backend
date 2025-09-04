@@ -10,7 +10,9 @@ import juryRoutes from "./routers/jury.router.js";
 import voteRoutes from "./routers/vote.router.js";
 import { webhook } from "./controllers/payment.controller.js";
 import cors from "cors"
-
+import mediaRoutes from "./routers/media.router.js";
+import path from "path";
+ 
 dotenv.config();
 connectDB()
 const app = express()
@@ -26,10 +28,14 @@ app.post(
 
 app.use(express.json());
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+// Apply CORS middleware before routes
+const corsOptions = {
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 app.get('/',(req,res)=>{
     res.send("This is create challenge backend")
@@ -37,12 +43,14 @@ app.get('/',(req,res)=>{
 
 
 app.use("/api/user", userRoutes);
+app.use("/api/media", mediaRoutes);
 app.use("/api/challenge", challengeRoutes);
 app.use("/api/entry", challengeEntry)
 app.use('/api/wallet', walletRoutes);
 app.use("/api/payment", paymentRoutes)
 app.use("/api/jury", juryRoutes);
 app.use("/api/votes", voteRoutes);
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.listen(port , ()=>{
     console.log(`Server is running on port ${port}`)
