@@ -35,3 +35,36 @@ export const updateWalletBalance = async (user_id, amount, operation = "add") =>
   return { ...wallet, balance: newBalance };
 };
 
+// Hold money in escrow
+export const holdInEscrow = async (userId, amount) => {
+  const db = await connectDB();
+  const wallet = await Wallet.findByUser(db, userId);
+  if (!wallet) throw new Error("Wallet not found");
+
+  const available = parseFloat(wallet.balance);
+  if (available < amount) throw new Error("Insufficient balance");
+
+  await db.query(
+    `UPDATE wallets 
+     SET balance = balance - ?, escrow_balance = escrow_balance + ?, updated_at = NOW() 
+     WHERE user_id = ?`,
+    [amount, amount, userId]
+  );
+};
+
+// Release money from escrow to balance
+export const releaseFromEscrow = async (userId, amount) => {
+  const db = await connectDB();
+  const wallet = await Wallet.findByUser(db, userId);
+  if (!wallet) throw new Error("Wallet not found");
+
+  const escrow = parseFloat(wallet.escrow_balance);
+  if (escrow < amount) throw new Error("Insufficient escrow balance");
+
+  await db.query(
+    `UPDATE wallets 
+     SET escrow_balance = escrow_balance - ?, balance = balance + ?, updated_at = NOW() 
+     WHERE user_id = ?`,
+    [amount, amount, userId]
+  );
+};

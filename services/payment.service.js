@@ -1,3 +1,4 @@
+// services/payment.service.js
 import stripe from "../libs/stripe.js";
 import { v4 as uuidv4 } from "uuid";
 import connectDB from "../libs/db.js";

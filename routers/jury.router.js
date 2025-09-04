@@ -9,6 +9,6 @@ const router = express.Router();
 router.post("/decision", castJuryDecision);
 
 // Finalize winner of challenge (decided by jury, may fallback to votes in case of tie)
-router.post("/finalize/:challengeId",authenticate, finalizeChallengeWinner);
+router.post("/finalize/:challengeId", authenticate, finalizeChallengeWinner);
 
 export default router;
