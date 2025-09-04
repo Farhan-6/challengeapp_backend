@@ -1,5 +1,5 @@
 // controllers/challengeEntry.service.js
-import { addEntry, addParticipantToChallenge, fetchEntriesByChallenge, fetchEntry, modifyEntry, removeEntry } from "../services/challengeEntry.service.js";
+import { addEntry, addParticipantToChallenge, fetchEntriesByChallenge, fetchEntry, modifyEntry, payoutWinner, removeEntry } from "../services/challengeEntry.service.js";
 
 
 export const joinChallenge = async (req, res) => {
@@ -64,5 +64,19 @@ export const remove = async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+export const rewardWinner = async (req, res) => {
+  try {
+    const { challengeId, winnerId } = req.body;
+    if (!challengeId || !winnerId) {
+      return res.status(400).json({ error: "challengeId and winnerId required" });
+    }
+
+    const result = await payoutWinner(challengeId, winnerId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
