@@ -202,7 +202,7 @@ if (file) {
     await fs.writeFile(tmpName, file.buffer);
     try {
       const url = await uploadToCloudinary({ filePath: tmpName, resource_type: "image", folder: "app/avatars" });
-      updates.avatar_url = url;
+      updated.avatar_url = url;
     } finally {
       try { await fs.remove(tmpName); } catch (e) {}
     }
@@ -211,7 +211,7 @@ if (file) {
     await fs.ensureDir(LOCAL_AVATARS_DIR);
     const dest = path.join(LOCAL_AVATARS_DIR, `${uuidv4()}${path.extname(file.originalname)}`);
     await fs.writeFile(dest, file.buffer);
-    updates.avatar_url = dest;
+    updated.avatar_url = dest;
   } else if (file.path) {
     // multer saved to disk
     if (isCloudinaryEnabled()) {
@@ -225,7 +225,7 @@ if (file) {
   }
 }
 
-    if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
+    if (Object.keys(updated).length === 0) return res.status(400).json({ error: "Nothing to update" });
 
     await updateUser(userId, updates);
     const updated = await getUserById(userId);
