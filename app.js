@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.get('/',(req,res)=>{
-    res.send("This is create challenge backend")
+    res.send("This is challengeapp backend")
 })
 
 
