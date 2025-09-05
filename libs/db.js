@@ -11,6 +11,7 @@ const connectDB = async () => {
       user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      connectionLimit: 10,
     });
     console.log("Database connected Successfully");
     return db;
