@@ -191,35 +191,34 @@ export const updateProfile = async (req, res) => {
 
 const file = req.file;
 if (file) {
-  // if memory storage (buffer), write a temp file only if needed for uploadToCloudinary
+  // prefer to process file.buffer directly (no local temp directories)
   let processedPath = file.path || null;
 
-  // If Cloudinary enabled and we have buffer, create a temp file then upload
   if (file.buffer && isCloudinaryEnabled()) {
-    // create a temp path in OS temp dir
-    const tmpName = path.join(process.cwd(), 'tmp', `${uuidv4()}${path.extname(file.originalname)}`);
-    await fs.ensureDir(path.dirname(tmpName));
-    await fs.writeFile(tmpName, file.buffer);
+    // upload directly from buffer to Cloudinary
     try {
-      const url = await uploadToCloudinary({ filePath: tmpName, resource_type: "image", folder: "app/avatars" });
-      updated.avatar_url = url;
-    } finally {
-      try { await fs.remove(tmpName); } catch (e) {}
+      const url = await uploadToCloudinary({ buffer: file.buffer, resource_type: "auto", folder: "app/avatars" });
+      processedPath = url;
+    } catch (err) {
+      console.error("cloudinary upload failed:", err);
+      // fallback to not setting processedPath
+      processedPath = null;
     }
-  } else if (file.buffer && !isCloudinaryEnabled()) {
-    // memory storage but not using cloud -> persist to local avatars dir
-    await fs.ensureDir(LOCAL_AVATARS_DIR);
-    const dest = path.join(LOCAL_AVATARS_DIR, `${uuidv4()}${path.extname(file.originalname)}`);
-    await fs.writeFile(dest, file.buffer);
-    updated.avatar_url = dest;
-  } else if (file.path) {
-    // multer saved to disk
-    if (isCloudinaryEnabled()) {
-      const url = await uploadToCloudinary({ filePath: file.path, resource_type: "image", folder: "app/avatars" });
-      updated.avatar_url = url;
-      try { await fs.remove(file.path); } catch (e) {}
-    } else {
-      // keep local path (note: ensure static serving)
+  }
+
+  if (processedPath) {
+    updated.avatar_url = processedPath;
+  } else {
+    // If Cloudinary not available, avoid writing local files — store avatar as data URI in DB
+    if (file.buffer && file.mimetype) {
+      try {
+        updated.avatar_url = `data:${file.mimetype};base64,${Buffer.from(file.buffer).toString('base64')}`;
+      } catch (e) {
+        // last resort: keep existing path if present
+        if (file.path) updated.avatar_url = file.path;
+      }
+    } else if (file.path) {
+      // legacy: keep local path if present
       updated.avatar_url = file.path;
     }
   }
@@ -269,6 +268,8 @@ export const removePreference = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+
 export const deleteAccount = async (req, res) => {
   try {
     // authenticate middleware already set req.user (decoded JWT)
