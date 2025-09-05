@@ -190,9 +190,9 @@ export const updateProfile = async (req, res) => {
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const file = req.file; // uploadAvatar.single('avatar') middleware in router
-    const { display_name, phone } = req.body;
+    const { first_name, phone } = req.body;
     const updates = {};
-    if (display_name !== undefined) updates.display_name = display_name;
+    if (first_name !== undefined) updates.first_name = first_name;
     if (phone !== undefined) updates.phone = phone;
 
     if (file) {
