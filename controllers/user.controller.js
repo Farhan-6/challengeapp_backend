@@ -189,18 +189,18 @@ export const updateProfile = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-<<<<<<< HEAD
+
 const file = req.file;
 if (file) {
   // if memory storage (buffer), write a temp file only if needed for uploadToCloudinary
   let processedPath = file.path || null;
-=======
+
     const file = req.file; // uploadAvatar.single('avatar') middleware in router
     const { first_name, phone } = req.body;
     const updates = {};
     if (first_name !== undefined) updates.first_name = first_name;
     if (phone !== undefined) updates.phone = phone;
->>>>>>> 30a62fdfcad0cf25d6b2b149ac1a3117cb257a3f
+
 
   // If Cloudinary enabled and we have buffer, create a temp file then upload
   if (file.buffer && isCloudinaryEnabled()) {
