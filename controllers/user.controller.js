@@ -189,33 +189,41 @@ export const updateProfile = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const file = req.file; // uploadAvatar.single('avatar') middleware in router
-    const { first_name, phone } = req.body;
-    const updates = {};
-    if (first_name !== undefined) updates.first_name = first_name;
-    if (phone !== undefined) updates.phone = phone;
+const file = req.file;
+if (file) {
+  // if memory storage (buffer), write a temp file only if needed for uploadToCloudinary
+  let processedPath = file.path || null;
 
-    if (file) {
-      // file.path is local path from multer
-      // optional image normalization/resizing; keep as-is to avoid dependency if you didn't install sharp
-      // If Cloudinary enabled, use it; otherwise store local path.
-      try {
-        // prefer cloudinary if configured
-        const { isCloudinaryEnabled, uploadToCloudinary } = await import("../utils/cloudinary.js");
-        if (isCloudinaryEnabled()) {
-          const url = await uploadToCloudinary({ filePath: file.path, resource_type: "image", folder: "app/avatars" });
-          updates.avatar_url = url;
-          // remove local file after upload
-          try { await import("fs-extra").then(m=>m.remove(file.path)); } catch(e){}
-        } else {
-          // store local path (you should serve /uploads as static in express)
-          updates.avatar_url = file.path;
-        }
-      } catch (e) {
-        // if cloudinary import/usage fails, fallback to local
-        updates.avatar_url = file.path;
-      }
+  // If Cloudinary enabled and we have buffer, create a temp file then upload
+  if (file.buffer && isCloudinaryEnabled()) {
+    // create a temp path in OS temp dir
+    const tmpName = path.join(process.cwd(), 'tmp', `${uuidv4()}${path.extname(file.originalname)}`);
+    await fs.ensureDir(path.dirname(tmpName));
+    await fs.writeFile(tmpName, file.buffer);
+    try {
+      const url = await uploadToCloudinary({ filePath: tmpName, resource_type: "image", folder: "app/avatars" });
+      updates.avatar_url = url;
+    } finally {
+      try { await fs.remove(tmpName); } catch (e) {}
     }
+  } else if (file.buffer && !isCloudinaryEnabled()) {
+    // memory storage but not using cloud -> persist to local avatars dir
+    await fs.ensureDir(LOCAL_AVATARS_DIR);
+    const dest = path.join(LOCAL_AVATARS_DIR, `${uuidv4()}${path.extname(file.originalname)}`);
+    await fs.writeFile(dest, file.buffer);
+    updates.avatar_url = dest;
+  } else if (file.path) {
+    // multer saved to disk
+    if (isCloudinaryEnabled()) {
+      const url = await uploadToCloudinary({ filePath: file.path, resource_type: "image", folder: "app/avatars" });
+      updated.avatar_url = url;
+      try { await fs.remove(file.path); } catch (e) {}
+    } else {
+      // keep local path (note: ensure static serving)
+      updated.avatar_url = file.path;
+    }
+  }
+}
 
     if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
 

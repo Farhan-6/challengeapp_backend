@@ -15,27 +15,32 @@ export const uploadMedia = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: "No file uploaded" });
+const file = req.file;
+if (!file) return res.status(400).json({ error: "No file uploaded" });
 
-    const { challenge_id } = req.body;
-    const metadata = req.body.metadata ? (() => {
-      try { return JSON.parse(req.body.metadata); } catch (e) { return null; }
-    })() : null;
-    const geotag_lat = req.body.geotag_lat ? Number(req.body.geotag_lat) : null;
-    const geotag_lng = req.body.geotag_lng ? Number(req.body.geotag_lng) : null;
+// support disk path or memory buffer
+const filePath = file.path || null;
+const buffer = file.buffer || null;
 
-    const proof = await createProof({
-      user_id: userId,
-      challenge_id: challenge_id || null,
-      original_name: file.originalname,
-      filePath: file.path, // multer stored it to disk
-      mimetype: file.mimetype,
-      size: file.size,
-      metadata,
-      geotag_lat,
-      geotag_lng,
-    });
+const metadata = req.body.metadata ? (() => {
+  try { return JSON.parse(req.body.metadata); } catch (e) { return null; }
+})() : null;
+
+const geotag_lat = req.body.geotag_lat ? Number(req.body.geotag_lat) : null;
+const geotag_lng = req.body.geotag_lng ? Number(req.body.geotag_lng) : null;
+
+const proof = await createProof({
+  user_id: userId,
+  challenge_id: req.body.challenge_id || null,
+  original_name: file.originalname,
+  filePath,   // may be null if memory used
+  buffer,     // may be null if disk used
+  mimetype: file.mimetype,
+  size: file.size,
+  metadata,
+  geotag_lat,
+  geotag_lng,
+});
 
     return res.json({ ok: true, proof });
   } catch (err) {

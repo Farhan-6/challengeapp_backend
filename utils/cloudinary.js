@@ -2,7 +2,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs-extra";
 
-let _enabled = false;
+let _enabled = true;
 
 if (
   process.env.CLOUDINARY_CLOUD_NAME &&
