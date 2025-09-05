@@ -28,7 +28,7 @@ export const createUser = async (user) => {
 export const getUserById = async (id) => {
   const db = await connectDB();
   const [rows] = await db.query(
-    `SELECT id, first_name, last_name, display_name, phone, email, cnic, date_of_birth, gender, role, kyc_status, avatar_url FROM users WHERE id = ? LIMIT 1`,
+    `SELECT id, first_name, last_name, phone, email, cnic, date_of_birth, gender, role, kyc_status, avatar_url FROM users WHERE id = ? LIMIT 1`,
     [id]
   );
   return rows[0] || null;
