@@ -19,7 +19,6 @@ export const createDepositIntent = async (userId, amount) => {
     reference_id: null,
   });
 
-  // Stripe PaymentIntent (auto-confirm for Postman testing)
     const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // paisa
         currency: "pkr",
@@ -49,10 +48,10 @@ export const handleStripeWebhook = async (event) => {
 
     // Update wallet
     const wallet = await getOrCreateWallet(userId);
-    console.log("💰 Wallet before:", wallet.balance);
+    console.log(" Wallet before:", wallet.balance);
 
     const updated = await updateWalletBalance(userId, paymentIntent.amount / 100, "add");
-    console.log("💰 Wallet after:", updated.balance);
+    console.log(" Wallet after:", updated.balance);
 
     return { success: true };
   }

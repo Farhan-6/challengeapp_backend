@@ -16,7 +16,7 @@ export const updateWalletBalance = async (user_id, amount, operation = "add") =>
   const wallet = await Wallet.findByUser(db, user_id);
   if (!wallet) throw new Error("Wallet not found");
 
-  // ✅ Convert both to numbers
+  // Convert both to numbers
   const currentBalance = parseFloat(wallet.balance);
   const numericAmount = parseFloat(amount);
 
@@ -28,7 +28,7 @@ export const updateWalletBalance = async (user_id, amount, operation = "add") =>
     newBalance -= numericAmount;
   }
 
-  // ✅ Store rounded to 2 decimals
+  // Store rounded to 2 decimals
   newBalance = parseFloat(newBalance.toFixed(2));
 
   await Wallet.updateBalance(db, user_id, newBalance);

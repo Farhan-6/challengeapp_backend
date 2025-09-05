@@ -12,22 +12,22 @@ import { getChallengeById } from "../models/challenge.model.js";
 export const addParticipantToChallenge = async (challengeId, participant_id, mediaUrl = null) => {
     const db = await connectDB();
 
-    // ✅ Check if participant exists
+    // Check if participant exists
     const [userRows] = await db.query(`SELECT id FROM users WHERE id = ?`, [participant_id]);
     if (userRows.length === 0) throw new Error("Participant does not exist");
 
-    // ✅ Prevent duplicate entry
+    // Prevent duplicate entry
     const [existing] = await db.query(
         `SELECT id FROM challenge_enteries WHERE challenge_id = ? AND participant_id = ?`,
         [challengeId, participant_id]
     );
     if (existing.length > 0) throw new Error("Already joined this challenge");
 
-    // ✅ Fetch challenge details
+    // Fetch challenge details
     const challenge = await getChallengeById(challengeId);
     if (!challenge) throw new Error("Challenge not found");
 
-    // ✅ Handle entry fee (escrow hold)
+    // Handle entry fee (escrow hold)
     if (challenge.entry_fee > 0) {
         const wallet = await getOrCreateWallet(participant_id);
 
@@ -57,7 +57,7 @@ export const addParticipantToChallenge = async (challengeId, participant_id, med
         });
     }
 
-    // ✅ Insert participant entry
+    // Insert participant entry
     const id = uuidv4();
     await db.query(
         `INSERT INTO challenge_enteries (id, challenge_id, participant_id, media_url)
@@ -68,9 +68,7 @@ export const addParticipantToChallenge = async (challengeId, participant_id, med
     return { id, challenge_id: challengeId, participant_id, media_url: mediaUrl };
 };
 
-/**
- * Generic entry management
- */
+// Generic entry management
 
 export const fetchEntriesByChallenge = async (challenge_id) => {
     const db = await connectDB();
@@ -92,9 +90,8 @@ export const removeEntry = async (id) => {
     return ChallengeEntry.remove(db, id);
 };
 
-/**
- * Payout winner → release prize from escrow
- */
+
+// Payout winner → release prize from escrow
 export const payoutWinner = async (challengeId, winnerId) => {
     const db = await connectDB();
     const challenge = await getChallengeById(challengeId);
